@@ -1,7 +1,9 @@
 import 'package:a_commerce/constants.dart';
 import 'package:a_commerce/widgets/custom_action_bar.dart';
 import 'package:a_commerce/widgets/image_swipe.dart';
+import 'package:a_commerce/widgets/product_size.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ProductPage extends StatefulWidget {
@@ -16,6 +18,24 @@ class ProductPage extends StatefulWidget {
 class _ProductPageState extends State<ProductPage> {
   final CollectionReference _productsRef =
       FirebaseFirestore.instance.collection("Products");
+
+  final CollectionReference _usersRef = FirebaseFirestore
+      .instance
+      .collection("Users");
+
+  User _user = FirebaseAuth.instance.currentUser;
+
+  String _selectedProductSize = "0";
+
+  Future _addToCart() {
+    return _usersRef
+        .doc(_user.uid)
+        .collection("Cart")
+        .doc(widget.productId)
+        .set({"size": _selectedProductSize});
+  }
+
+  final SnackBar _snackBar = SnackBar(content: Text("Product added to the cart"),);
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +59,14 @@ class _ProductPageState extends State<ProductPage> {
 
                 // List of images
                 List imageList = documentData['images'];
+                List productSizes = documentData['size'];
 
                 return ListView(
                   padding: EdgeInsets.all(0),
                   children: [
-                    ImageSwipe(imageList: imageList,),
+                    ImageSwipe(
+                      imageList: imageList,
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(
                         top: 24.0,
@@ -92,6 +115,61 @@ class _ProductPageState extends State<ProductPage> {
                         style: Constants.regularDarkText,
                       ),
                     ),
+                    ProductSize(
+                      productSizes: productSizes,
+                      onSelected: (size) {
+                        _selectedProductSize = size;
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 65.0,
+                            height: 65.0,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFDCDCDC),
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            alignment: Alignment.center,
+                            child: Image(
+                              image: AssetImage(
+                                "assets/images/tab_saved.png",
+                              ),
+                              height: 22.0,
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                await _addToCart();
+                                Scaffold.of(context).showSnackBar(_snackBar);
+                              },
+                              child: Container(
+                                height: 65.0,
+                                margin: EdgeInsets.only(
+                                  left: 16.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "Add To Cart",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    )
                   ],
                 );
               }
