@@ -1,4 +1,3 @@
-import 'package:a_commerce/constants.dart';
 import 'package:a_commerce/screens/product_page.dart';
 import 'package:a_commerce/services/firebase_services.dart';
 import 'package:a_commerce/widgets/custom_action_bar.dart';

@@ -3,8 +3,6 @@ import 'package:a_commerce/services/firebase_services.dart';
 import 'package:a_commerce/widgets/custom_action_bar.dart';
 import 'package:a_commerce/widgets/image_swipe.dart';
 import 'package:a_commerce/widgets/product_size.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ProductPage extends StatefulWidget {
@@ -23,6 +21,14 @@ class _ProductPageState extends State<ProductPage> {
     return _firebaseServices.usersRef
         .doc(_firebaseServices.getUserId())
         .collection("Cart")
+        .doc(widget.productId)
+        .set({"size": _selectedProductSize});
+  }
+
+  Future _addToSaved() {
+    return _firebaseServices.usersRef
+        .doc(_firebaseServices.getUserId())
+        .collection("Saved")
         .doc(widget.productId)
         .set({"size": _selectedProductSize});
   }
@@ -121,19 +127,25 @@ class _ProductPageState extends State<ProductPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 65.0,
-                            height: 65.0,
-                            decoration: BoxDecoration(
-                              color: Color(0xFFDCDCDC),
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            alignment: Alignment.center,
-                            child: Image(
-                              image: AssetImage(
-                                "assets/images/tab_saved.png",
+                          GestureDetector(
+                            onTap: () async {
+                              await _addToSaved();
+                              Scaffold.of(context).showSnackBar(_snackBar);
+                            },
+                            child: Container(
+                              width: 65.0,
+                              height: 65.0,
+                              decoration: BoxDecoration(
+                                color: Color(0xFFDCDCDC),
+                                borderRadius: BorderRadius.circular(12.0),
                               ),
-                              height: 22.0,
+                              alignment: Alignment.center,
+                              child: Image(
+                                image: AssetImage(
+                                  "assets/images/tab_saved.png",
+                                ),
+                                height: 22.0,
+                              ),
                             ),
                           ),
                           Expanded(
